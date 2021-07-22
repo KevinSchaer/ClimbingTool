@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Error
+{% endblock %}
+
+{% block main %}
+
+    {% if error[0] == "user uniqueness" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Username is already taken!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "missing username" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Must provide username!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "missing password" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Must provide password!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "missing confirmation" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Must confirm password!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "different passwords" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Passwords are not identical!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "invalid credentials" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Either username or password is not correct!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "query failed" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Database query failed!</p>
+        </div>
+    {% endif %}
+
+{% endblock %}
