@@ -8,10 +8,16 @@ db.execute("""CREATE TABLE IF NOT EXISTS users (
         id INTEGER,
         username TEXT NOT NULL UNIQUE,
         hash TEXT NOT NULL,
+        email TEXT NOT NULL,
+        bodyweight REAL,
+        height INTEGER,
+        age INTEGER,
+        redpoint TEXT,
+        onsight TEXT,
         PRIMARY KEY (id)
     )""")
 
-db.execute("""CREATE TABLE IF NOT EXISTS routeS (
+db.execute("""CREATE TABLE IF NOT EXISTS routes (
         id INTEGER,
         name TEXT NOT NULL,
         grade TEXT,

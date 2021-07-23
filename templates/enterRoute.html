@@ -11,59 +11,50 @@
         </div>
 
         <div class="form-group">
-            <select id="grade">
-                <option value="" disabled selected>Grade?</option>
-                {% for number in range(2,10) %}
-                    {% for letter in ["a", "b", "c"] %}
-                        {% for symbol in ["", "+"] %}
-                            <option value={{number}}{{letter}}{{symbol}}>{{ number }}{{ letter }}{{ symbol }}</option>
-                        {% endfor %}
-                    {% endfor %}
+            <input autocomplete="off" class="form-control" name="spot" placeholder="Spot" type="text">
+        </div>
+
+        <div class="form-group">
+            <select name="grade">
+                <option disabled selected>Grade?</option>
+                {% for grade in grades %}
+                    <option>{{ grade }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="form-group">
-            <select id="grade">
-                <option value="" disabled selected>Top Reached?</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="attemps" placeholder="Attemps?" type="number">
-        </div>
-
-        <div class="form-group">
-            <select id="country">
-                <option value="" disabled selected>Which Country?</option>
-                {% for country in ["France", "Germany", "Norway", "Switzerland", "Spain"] %}
-                    <option value={{country}}>{{ country }}</option>
+            <select name="user_grade">
+                <option disabled selected>Personal Grade?</option>
+                {% for user_grade in user_grades %}
+                    <option>{{ user_grade }}</option>
                 {% endfor %}
             </select>
         </div>
 
         <div class="form-group">
-            <select id="sector">
-                <option value="" disabled selected>Which Spot?</option>
-                {% for spot in ["Balsthal", "Eppenberg", "Flatanger", "Gempen"] %}
-                    <option value={{spot}}>{{ spot }}</option>
-                {% endfor %}
-            </select>
+            <input autocomplete="off" class="form-control" name="attemps" placeholder="Attemps?" type="number" min="1">
         </div>
 
         <div class="form-group">
-            <select id="sector">
-                <option value="" disabled selected>Which Sector?</option>
-                {% for sector in ["alter Klettergarten", "neuer Klettergarten", "Hanshallaren Cave"] %}
-                    <option value={{sector}}>{{ sector }}</option>
-                {% endfor %}
+            <select name="top_reached">
+                <option disabled selected>Top Reached?</option>
+                <option>Yes</option>
+                <option>No</option>
             </select>
         </div>
-
+        
         <div class="form-group">
             <textarea rows="4" cols="50" name="comments" placeholder="Any Comments about the route?"></textarea>
+        </div>
+
+        <div class="form-group">
+            <select name="score">
+                <option disabled selected>Score?</option>
+                {% for score in scores %}
+                    <option>{{ score }}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <button class="btn btn-primary" type="submit">Submit</button>

@@ -1,7 +1,6 @@
 import os
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
-from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -33,6 +32,18 @@ connection = sqlite3.connect('climbing.db', check_same_thread=False)
 connection.row_factory = sqlite3.Row # allow to access return variable by column name
 db = connection.cursor()
 
+# Fixed values
+GRADES = []
+USER_GRADES = []
+TOP_REACHED = ["Yes", "No"]
+SCORE = [1, 2, 3, 4, 5]
+
+for number in range(4,7):
+    for letter in ["a", "b", "c"]:
+        for symbol in ["", "+"]:
+            GRADES.append(number+letter+symbol)
+            USER_GRADES.append(number+letter+symbol)
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -42,10 +53,83 @@ def index():
 def enterRoute():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        pass
+        
+        route_name = request.form.get("route_name")
+        spot = request.form.get("spot")
+        grade = request.form.get("grade")
+        user_grade = request.form.get("user_grade")
+        attempts = request.form.get("attempts")
+        top_reached = request.form.get("top_reached")
+        comments = request.form.get("comments")
+        score = request.form.get("score")
+
+        # Check if the form is completed
+        if not route_name:
+            return render_template("error.html", error=["incomplete form"])
+        
+        if not spot:
+            return render_template("error.html", error=["incomplete form"])
+        
+        if not grade:
+            return render_template("error.html", error=["incomplete form"])
+
+        if not user_grade:
+            return render_template("error.html", error=["incomplete form"])
+        
+        if not attempts:
+            return render_template("error.html", error=["incomplete form"])
+
+        if not top_reached:
+            return render_template("error.html", error=["incomplete form"])
+
+        if not comments:
+            return render_template("error.html", error=["incomplete form"])
+
+        if not score:
+            return render_template("error.html", error=["incomplete form"])
+
+        # Check if the attempt input is an integer
+        try:
+            attempts = int(attempts)
+        except:
+            return render_template("error.html", error=["invalid value"])
+
+        # Check for positive values (attempt input)
+        if  attempts <= 0:
+            return render_template("error.html", error=["invalid value"])
+
+        # Check for valid values from select-options
+        if grade not in GRADES:
+            return render_template("error.html", error=["invalid value"])
+
+        if user_grade not in USER_GRADES:
+            return render_template("error.html", error=["invalid value"])
+        
+        if top_reached not in TOP_REACHED:
+            return render_template("error.html", error=["invalid value"])
+        
+        if score not in SCORE:
+            return render_template("error.html", error=["invalid value"])
+
+        route = {"route_name": route_name, "spot": spot, "grade": grade, "user_grade": user_grade, "attempts": attempts,
+        "top_reached": top_reached, "comments": comments, "score": score}
+
+        return redirect("/confirmRoute.html", route=route)
+
     # if User reached route via GET
     else:
         return render_template("enterRoute.html")
+
+
+@app.route("/confirmRoute", methods=["GET", "POST"])
+@login_required
+def confirmRoute():
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        pass
+    # if User reached route via GET
+    else:
+        return render_template("confirmRoute.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -105,6 +189,7 @@ def register():
     """Register user"""
 
     username = request.form.get("username")
+    email = request.form.get("email")
     password = request.form.get("password")
     confirmation = request.form.get("confirmation")
 
@@ -114,6 +199,10 @@ def register():
         # Ensure username was submitted
         if not username:
             return render_template("error.html", error=["missing username"])
+            
+        # Ensure email was submitted
+        if not email:
+            return render_template("error.html", error=["missing email"])
 
         # Ensure password was submitted
         elif not password:
@@ -131,7 +220,7 @@ def register():
         hashPassword = generate_password_hash(password)
 
         try:
-            db.execute("INSERT INTO users (username, hash) Values (:username, :hash)", {"username": username, "hash": hashPassword})
+            db.execute("INSERT INTO users (username, hash, email) Values (:username, :hash, :email)", {"username": username, "hash": hashPassword, "email": email})
             connection.commit()
         except:
             return render_template("error.html", error=["user uniqueness"])

@@ -18,6 +18,12 @@
         </div>
     {% endif %}
 
+    {% if error[0] == "missing email" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Must provide email!</p>
+        </div>
+    {% endif %}
+
     {% if error[0] == "missing password" %}
         <div class="alert alert-danger" role="alert">
             <p>Error: Must provide password!</p>
@@ -45,6 +51,18 @@
     {% if error[0] == "query failed" %}
         <div class="alert alert-danger" role="alert">
             <p>Error: Database query failed!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "invalid value" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Invalid value!</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "incomplete form" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Incomplete form!</p>
         </div>
     {% endif %}
 
