@@ -55,10 +55,13 @@ def select():
 
 select()
 
+#db.execute("INSERT INTO routes (name, grade, spot) Values (:name, :grade, :spot)", {"name": "Tschortschi", "grade": "6b", "spot": "Eppenberg"})
+#connection.commit()
+
 db.execute("SELECT * from routes")
 connection.commit()
 rows = db.fetchall()
-print(rows)
+print(rows[0]["name"])
 
 db.execute("SELECT * from user_route")
 connection.commit()

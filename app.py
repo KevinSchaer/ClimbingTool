@@ -1,5 +1,6 @@
 import os
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, jsonify
+from flask.helpers import url_for
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -36,17 +37,28 @@ db = connection.cursor()
 GRADES = []
 USER_GRADES = []
 TOP_REACHED = ["Yes", "No"]
-SCORE = [1, 2, 3, 4, 5]
+SCORES = [1, 2, 3, 4, 5]
 
 for number in range(4,7):
     for letter in ["a", "b", "c"]:
         for symbol in ["", "+"]:
-            GRADES.append(number+letter+symbol)
-            USER_GRADES.append(number+letter+symbol)
+            GRADES.append(str(number)+letter+symbol)
+            USER_GRADES.append(str(number)+letter+symbol)
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/search")
+def search():
+    q = request.args.get("q")
+    if q:
+        routes = db.execute("SELECT * FROM routes WHERE name LIKE ?", "%" + q + "%")
+    else:
+        routes = []
+        return jsonify(routes)
+
 
 @app.route("/enterRoute", methods=["GET", "POST"])
 @login_required
@@ -61,9 +73,9 @@ def enterRoute():
         attempts = request.form.get("attempts")
         top_reached = request.form.get("top_reached")
         comments = request.form.get("comments")
-        score = request.form.get("score")
-
-        # Check if the form is completed
+        score = int(request.form.get("score"))
+        
+        # Check if the form is completed; comments are voluntarily
         if not route_name:
             return render_template("error.html", error=["incomplete form"])
         
@@ -72,22 +84,19 @@ def enterRoute():
         
         if not grade:
             return render_template("error.html", error=["incomplete form"])
-
+        
         if not user_grade:
             return render_template("error.html", error=["incomplete form"])
-        
+
         if not attempts:
             return render_template("error.html", error=["incomplete form"])
 
         if not top_reached:
             return render_template("error.html", error=["incomplete form"])
 
-        if not comments:
-            return render_template("error.html", error=["incomplete form"])
-
         if not score:
             return render_template("error.html", error=["incomplete form"])
-
+        
         # Check if the attempt input is an integer
         try:
             attempts = int(attempts)
@@ -97,7 +106,7 @@ def enterRoute():
         # Check for positive values (attempt input)
         if  attempts <= 0:
             return render_template("error.html", error=["invalid value"])
-
+        
         # Check for valid values from select-options
         if grade not in GRADES:
             return render_template("error.html", error=["invalid value"])
@@ -108,28 +117,14 @@ def enterRoute():
         if top_reached not in TOP_REACHED:
             return render_template("error.html", error=["invalid value"])
         
-        if score not in SCORE:
+        if score not in SCORES:
             return render_template("error.html", error=["invalid value"])
 
-        route = {"route_name": route_name, "spot": spot, "grade": grade, "user_grade": user_grade, "attempts": attempts,
-        "top_reached": top_reached, "comments": comments, "score": score}
-
-        return redirect("/confirmRoute.html", route=route)
+        return redirect("/")
 
     # if User reached route via GET
     else:
-        return render_template("enterRoute.html")
-
-
-@app.route("/confirmRoute", methods=["GET", "POST"])
-@login_required
-def confirmRoute():
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        pass
-    # if User reached route via GET
-    else:
-        return render_template("confirmRoute.html")
+        return render_template("enterRoute.html", grades=GRADES, user_grades=USER_GRADES, top_reached=TOP_REACHED, scores=SCORES)
 
 
 @app.route("/login", methods=["GET", "POST"])
