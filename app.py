@@ -46,18 +46,9 @@ for number in range(4,7):
             USER_GRADES.append(str(number)+letter+symbol)
 
 @app.route("/")
+@login_required
 def index():
     return render_template("index.html")
-
-
-@app.route("/search")
-def search():
-    q = request.args.get("q")
-    if q:
-        routes = db.execute("SELECT * FROM routes WHERE name LIKE ?", "%" + q + "%")
-    else:
-        routes = []
-        return jsonify(routes)
 
 
 @app.route("/enterRoute", methods=["GET", "POST"])
@@ -72,8 +63,8 @@ def enterRoute():
         user_grade = request.form.get("user_grade")
         attempts = request.form.get("attempts")
         top_reached = request.form.get("top_reached")
-        comments = request.form.get("comments")
-        score = int(request.form.get("score"))
+        comment = request.form.get("comments")
+        score = request.form.get("score")
         
         # Check if the form is completed; comments are voluntarily
         if not route_name:
@@ -97,9 +88,10 @@ def enterRoute():
         if not score:
             return render_template("error.html", error=["incomplete form"])
         
-        # Check if the attempt input is an integer
+        # Check if the attempt and score input is an integer
         try:
             attempts = int(attempts)
+            score = int(score)
         except:
             return render_template("error.html", error=["invalid value"])
 
@@ -119,6 +111,33 @@ def enterRoute():
         
         if score not in SCORES:
             return render_template("error.html", error=["invalid value"])
+
+        # database queries
+        try:
+            db.execute("SELECT id FROM routes WHERE name = (:route_name) AND grade = (:grade) AND spot = (:spot)", {"route_name": route_name, "grade": grade, "spot": spot})
+            route = db.fetchall()
+            connection.commit()
+        except:
+            return render_template("error.html", error=["query failed"])
+
+        if not route:
+            try:
+                db.execute("INSERT INTO routes (name, grade, spot) Values (:route_name, :grade, :spot)", {"route_name": route_name, "grade": grade, "spot": spot})
+                db.execute("SELECT id FROM routes WHERE name = (:route_name) AND grade = (:grade) AND spot = (:spot)", {"route_name": route_name, "grade": grade, "spot": spot})
+                route = db.fetchall()
+                connection.commit()
+            except:
+                return render_template("error.html", error=["query failed"])
+
+        route_id = route[0]["id"]
+
+        try:
+            db.execute("INSERT INTO user_route (user_id, route_id, top_reached, attempts, score, user_grade, comment) VALUES (:user_id, :route_id, :top_reached, :attempts, :score, :user_grade, :comment)", {"user_id": session["user_id"],"route_id": route_id, "top_reached": top_reached, "attempts": attempts, "score": score, "user_grade": user_grade, "comment": comment})
+            connection.commit()
+        except:
+            return render_template("error.html", error=["query failed"])
+
+        flash('You have successfully entered a new route!')
 
         return redirect("/")
 
@@ -282,4 +301,4 @@ def changePassword():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
