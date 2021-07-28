@@ -6,6 +6,74 @@
 
 {% block main %}
 
-Hello There!
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Hey, this is {{ result_users.username }}!</h1>
+            <p class="lead">{{ result_users.about_me }}</p>
+        </div>
+    </div>
+
+    <img src="https://via.placeholder.com/150" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="200px" heigth="200px">
+
+    <p>
+        Username: {{ result_users.username }}
+        <br>
+        Age: {{ result_users.age }} years
+        <br>
+        Height: {{ result_users.height }} cm
+        <br>
+        Bodyweight: {{ result_users.bodyweight }} kg
+        <br>
+        Redpoint: {{ result_users.redpoint }}
+        <br>
+        Onsight: {{ result_users.onsight }}
+    </p>
+    <br>
+    <br>
+    <h1>Climbing History</h1>
+    <table style="width:100%" class="table-striped">
+        <tr>
+        <th>Spot</th>
+        <th>Route</th>
+        <th>Grade</th>
+        <th>User Grade</th>
+        <th>Top reached?</th>
+        <th>Attempts</th>
+        <th>Score</th>
+        <th>Comment</th>
+        </tr>
+        <tr>
+        <td>Eppenberg</td>
+        <td>Tschortschi</td>
+        <td>6b</td>
+        <td>9c</td>
+        <td>yes</td>
+        <td>23</td>
+        <td>{% for i in range(0,5) %}
+            <span class="fa fa-star checked"></span>
+        {% endfor %}
+        {% for i in range(0,5-5) %}
+            <span class="fa fa-star"></span>
+        {% endfor %}
+    </td>
+        <td>Holy shit, that was fucking awesome!</td>
+        </tr>
+        <tr>
+        <td>Balsthal</td>
+        <td>Pädobär</td>
+        <td>5c</td>
+        <td>5c</td>
+        <td>yes</td>
+        <td>1</td>
+        <td>{% for i in range(0,3) %}
+                <span class="fa fa-star checked"></span>
+            {% endfor %}
+            {% for i in range(0,5-3) %}
+                <span class="fa fa-star"></span>
+            {% endfor %}
+        </td>
+        <td>Was ok but nothing special!</td>
+        </tr>
+    </table>
 
 {% endblock %}

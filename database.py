@@ -14,8 +14,9 @@ db.execute("""CREATE TABLE IF NOT EXISTS users (
         age INTEGER,
         redpoint TEXT,
         onsight TEXT,
+        about_me TEXT,
         PRIMARY KEY (id)
-    )""")
+    );""")
 
 db.execute("""CREATE TABLE IF NOT EXISTS routes (
         id INTEGER NOT NULL,
@@ -23,7 +24,7 @@ db.execute("""CREATE TABLE IF NOT EXISTS routes (
         grade TEXT NOT NULL,
         spot TEXT NOT NULL,
         PRIMARY KEY (id)
-    )""")
+    );""")
 
 db.execute("""CREATE TABLE IF NOT EXISTS user_route (
         user_id INTEGER,
@@ -33,6 +34,7 @@ db.execute("""CREATE TABLE IF NOT EXISTS user_route (
         score INTEGER,
         user_grade TEXT,
         comment TEXT,
+        time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, route_id),
         FOREIGN KEY (user_id)
             REFERENCES users (id)
@@ -42,7 +44,7 @@ db.execute("""CREATE TABLE IF NOT EXISTS user_route (
             REFERENCES routes (id)
                 ON DELETE CASCADE
                 ON UPDATE NO ACTION
-    )""")
+    );""")
 
 def select():
     db.execute("SELECT * from users")

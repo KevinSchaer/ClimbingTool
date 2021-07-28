@@ -48,7 +48,83 @@ for number in range(4,7):
 @app.route("/")
 @login_required
 def index():
-    return render_template("index.html")
+
+    user_id = session["user_id"]
+
+    # Get existing user values from database
+    db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
+    result_users = db.fetchone()
+    connection.commit()
+
+    return render_template("index.html", result_users=result_users)
+
+
+@app.route("/editUserProfile", methods=["GET", "POST"])
+@login_required
+def editUserProfile():
+
+    user_id = session["user_id"]
+
+    # Get existing user values from database
+    db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
+    result = db.fetchone()
+    connection.commit()
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        age = request.form.get("age")
+        height = request.form.get("height")
+        bodyweight = request.form.get("bodyweight")
+        redpoint = request.form.get("redpoint")
+        onsight = request.form.get("onsight")
+        about_me = request.form.get("about_me")
+        
+        if not age:
+            age = result["age"]
+        if not height:
+            height = result["height"]
+        if not bodyweight:
+            bodyweight = result["bodyweight"]
+        if not redpoint:
+            redpoint = result["redpoint"]
+        if not onsight:
+            onsight = result["onsight"]
+        if not about_me:
+            about_me = result["about_me"]
+
+        # Check if the age, height and bodyweight input is an integer or float
+        try:
+            age = int(age)
+            height = int(height)
+            bodyweight = float(bodyweight)
+        except:
+            return render_template("error.html", error=["invalid value"])
+        
+        # Check for positive values (age, height, bodyweight input)
+        if  age <= 0 or height <= 0 or bodyweight <= 0:
+            return render_template("error.html", error=["invalid value"])
+        
+        # Check for valid values from select-options
+        if redpoint not in GRADES:
+            return render_template("error.html", error=["invalid value"])
+
+        if onsight not in GRADES:
+            return render_template("error.html", error=["invalid value"])
+        
+        try:
+            db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "user_id": user_id})
+            connection.commit()
+        except:
+            return render_template("error.html", error=["query failed"])
+        
+        flash('You have successfully updated your user profile!')
+
+        return redirect("/editUserProfile")
+
+    # if User reached route via GET
+    else:
+        return render_template("editUserProfile.html", grades=GRADES, result=result)
 
 
 @app.route("/enterRoute", methods=["GET", "POST"])
@@ -88,7 +164,7 @@ def enterRoute():
         if not score:
             return render_template("error.html", error=["incomplete form"])
         
-        # Check if the attempt and score input is an integer
+        # convert attempts and score to an integer
         try:
             attempts = int(attempts)
             score = int(score)
@@ -111,7 +187,7 @@ def enterRoute():
         
         if score not in SCORES:
             return render_template("error.html", error=["invalid value"])
-
+        
         # database queries
         try:
             db.execute("SELECT id FROM routes WHERE name = (:route_name) AND grade = (:grade) AND spot = (:spot)", {"route_name": route_name, "grade": grade, "spot": spot})

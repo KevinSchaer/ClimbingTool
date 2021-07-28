@@ -36,8 +36,8 @@ main
     /* Scroll horizontally as needed */
     overflow-x: auto;
 
-    /* Center contents */
-    text-align: center;
+    /* Center contents 
+    text-align: center;*/
 }
 
 main img
@@ -45,3 +45,8 @@ main img
     /* Constrain images on small screens */
     max-width: 100%;
 }
+
+
+.checked {
+    color: orange;
+  }
