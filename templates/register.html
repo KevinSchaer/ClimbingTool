@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/register" method="post">
+<div class="content-alignment">
+    <form action="/register" method="post" class="form-alignment">
         <div class="form-group">
             <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
         </div>
@@ -21,4 +22,5 @@
 
         <button class="btn btn-primary" type="submit">Register</button>
     </form>
+</div>
 {% endblock %}

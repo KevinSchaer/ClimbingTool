@@ -23,40 +23,63 @@
 
     <body class="d-flex flex-column" style="min-height: 100vh">
 
-        <nav class="navbar navbar-expand-md navbar-light bg-light border">
-            <a class="navbar-brand" href="/">Climbing Tool</a>
-            <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbar" data-toggle="collapse" type="button">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbar">
-                {% if session.user_id %}
-                    <ul class="navbar-nav mr-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/enterRoute">Enter Route</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/editUserProfile">Edit User Profile</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/changePassword">Change Password</a></li>
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-secondary fixed-top">
+                <a class="navbar-brand" href="/">Climbing Tool</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        {% if session.user_id %}
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Profile</a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="/editUserProfile">Edit User Profile</a>
+                                    <a class="dropdown-item" href="/changePassword">Change Password</a>
+                                    <a class="dropdown-item" href="#">Search Users</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Route Management</a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="/enterRoute">Enter Route</a>
+                                    <a class="dropdown-item" href="#">Update Route</a>
+                                    <a class="dropdown-item" href="#">Search Routes</a>
+                                </div>
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/logout">Log Out</a>
+                            </li>
+                        </ul>
+                        {% else %}
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/register">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/login">Log In</a>
+                            </li>
+                        </ul>
+                        {% endif %}
                     </ul>
-                    <ul class="navbar-nav ml-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
-                    </ul>
-                {% else %}
-                    <ul class="navbar-nav ml-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
-                    </ul>
-                {% endif %}
-            </div>
-        </nav>
+                </div>
+            </nav>
 
-        {% if get_flashed_messages() %}
-            <header>
+        </header>
+
+        <main class="mt-5">
+            {% if get_flashed_messages() %}
                 <div class="alert alert-primary border text-center" role="alert">
                     {{ get_flashed_messages() | join(" ") }}
                 </div>
-            </header>
-        {% endif %}
-
-        <main class="container p-5">
-            {% block main %}{% endblock %}
+            {% endif %}
+            {% block jumbotron %}{% endblock %}
+            <div class="container-fluid mt-5">
+                {% block main %}{% endblock %}
+            </div>
         </main>
 
     </body>

@@ -4,63 +4,149 @@
     Index
 {% endblock %}
 
-{% block main %}
-
+{% block jumbotron %}
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
             <h1 class="display-4">Hey, this is {{ result_users.username }}!</h1>
-            <p class="lead">{{ result_users.about_me }}</p>
+            <p class="lead">
+                {% if result_users.about_me is not none %}
+                    {{ result_users.about_me }}
+                {% else %}
+                    There is nothing to tell.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block main %}
+
+    <div class="col-md-12 mb-3 mt-5 no-gutters profile-alignment">
+        <div class="col-md-3">
+            <img src="https://via.placeholder.com/150" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="150px" height="150px">
+        </div>
+        <div class="col-md-3">
+
+            <table class="col-md-12 table-striped">
+                <tr class="col-md-3">
+                    <td>Username: </td>
+                    <td class="userinfo-alignment">{{ result_users.username }}</td>
+                </tr>
+                <tr class="col-md-3">
+                    <td>Age: </td>
+                    <td class="userinfo-alignment">
+                        {% if result_users.age is not none %}
+                            {{ result_users.age }} years
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="col-md-3">
+                    <td>Height: </td>
+                    <td class="userinfo-alignment">
+                        {% if result_users.height is not none %}
+                            {{ result_users.height }} cm
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="col-md-3">
+                    <td>Bodyweight: </td>
+                    <td class="userinfo-alignment">
+                        {% if result_users.bodyweight is not none %}
+                            {{ result_users.bodyweight }} kg
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="col-md-3">
+                    <td>Redpoint: </td>
+                    <td class="userinfo-alignment">
+                        {% if result_users.redpoint is not none %}
+                            {{ result_users.redpoint }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="col-md-3">
+                    <td>Onsight: </td>
+                    <td class="userinfo-alignment">
+                        {% if result_users.onsight is not none %}
+                            {{ result_users.onsight }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
         </div>
     </div>
 
-    <img src="https://via.placeholder.com/150" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="200px" heigth="200px">
+ 
+    <h1 class="display-5 mt-5">Latest Climbs</h1>
 
-    <p>
-        Username: {{ result_users.username }}
-        <br>
-        Age: {{ result_users.age }} years
-        <br>
-        Height: {{ result_users.height }} cm
-        <br>
-        Bodyweight: {{ result_users.bodyweight }} kg
-        <br>
-        Redpoint: {{ result_users.redpoint }}
-        <br>
-        Onsight: {{ result_users.onsight }}
-    </p>
-    <br>
-    <br>
-    <h1>Climbing History</h1>
-
-    <table style="width: 100%" class="table-striped">
-        <tr>
-            <th>Spot</th>
-            <th>Route</th>
-            <th>Grade</th>
-            <th>User Grade</th>
-            <th>Top reached?</th>
-            <th>Attempts</th>
-            <th>Score</th>
-            <th>Comment</th>
-        </tr>
-        {% for i in range(0,2) %}
-            <tr>
-                <td>{{ result_routes[i]["spot"] }}</td>
-                <td>{{ result_routes[i]["name"] }}</td>
-                <td>{{ result_routes[i]["grade"] }}</td>
-                <td>{{ result_routes[i]["user_grade"] }}</td>
-                <td>{{ result_routes[i]["top_reached"] }}</td>
-                <td>{{ result_routes[i]["attempts"] }}</td>
-                <td>{% for i in range(0,result_routes[i]["score"]) %}
-                        <span class="fa fa-star checked"></span>
+    <div class="table-responsive-md">
+        <table class="table table-striped table-hover table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Spot</th>
+                    <th scope="col">Route</th>
+                    <th scope="col">Grade</th>
+                    <th scope="col">User Grade</th>
+                    <th scope="col">Top reached?</th>
+                    <th scope="col">Attempts</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set routes_length = result_routes|length %}
+                {% set routes_shown = 5 %}
+                {% if routes_length < routes_shown %}
+                    {% for i in range(0,routes_length) %}
+                        <tr>
+                            <td>{{ result_routes[i]["spot"] }}</td>
+                            <td>{{ result_routes[i]["name"] }}</td>
+                            <td>{{ result_routes[i]["grade"] }}</td>
+                            <td>{{ result_routes[i]["user_grade"] }}</td>
+                            <td>{{ result_routes[i]["top_reached"] }}</td>
+                            <td>{{ result_routes[i]["attempts"] }}</td>
+                            <td>{% for i in range(0,result_routes[i]["score"]) %}
+                                    <span class="fa fa-star checked"></span>
+                                {% endfor %}
+                                {% for i in range(0,5-result_routes[i]["score"]) %}
+                                    <span class="fa fa-star"></span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ result_routes[i]["comment"] }}</td>
+                        </tr>
                     {% endfor %}
-                    {% for i in range(0,5-result_routes[i]["score"]) %}
-                        <span class="fa fa-star"></span>
+                {% else %}
+                    {% for i in range(0,routes_shown) %}
+                        <tr>
+                            <td>{{ result_routes[i]["spot"] }}</td>
+                            <td>{{ result_routes[i]["name"] }}</td>
+                            <td>{{ result_routes[i]["grade"] }}</td>
+                            <td>{{ result_routes[i]["user_grade"] }}</td>
+                            <td>{{ result_routes[i]["top_reached"] }}</td>
+                            <td>{{ result_routes[i]["attempts"] }}</td>
+                            <td>{% for i in range(0,result_routes[i]["score"]) %}
+                                    <span class="fa fa-star checked"></span>
+                                {% endfor %}
+                                {% for i in range(0,5-result_routes[i]["score"]) %}
+                                    <span class="fa fa-star"></span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ result_routes[i]["comment"] }}</td>
+                        </tr>
                     {% endfor %}
-                </td>
-                <td>{{ result_routes[i]["comments"] }}</td>
-            </tr>
-        {% endfor %}
-    </table>
-
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

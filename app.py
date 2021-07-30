@@ -54,7 +54,7 @@ def index():
     # Get existing user values from database
     db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
-    db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot, time FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+    db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
     result_routes = db.fetchall()
     connection.commit()
 
@@ -84,35 +84,53 @@ def editUserProfile():
         
         if not age:
             age = result["age"]
+        else:
+            # Check if the form input is an integer 
+            try:
+                age = int(age)
+                if age <= 0:
+                    return render_template("error.html", error=["invalid value"])
+            except:
+                return render_template("error.html", error=["invalid value"])
+
         if not height:
             height = result["height"]
+        else:
+            # Check if the form input is an integer 
+            try:
+                height = int(height)
+                if height <= 0:
+                    return render_template("error.html", error=["invalid value"])
+            except:
+                return render_template("error.html", error=["invalid value"])
+
         if not bodyweight:
             bodyweight = result["bodyweight"]
+        else:
+            # Check if the form input is a float
+            try:
+                bodyweight = float(bodyweight)
+                if bodyweight <= 0:
+                    return render_template("error.html", error=["invalid value"])
+            except:
+                return render_template("error.html", error=["invalid value"])
+
         if not redpoint:
             redpoint = result["redpoint"]
+        else:
+            # Check for valid values from select-options
+            if redpoint not in GRADES:
+                return render_template("error.html", error=["invalid value"])
+
         if not onsight:
             onsight = result["onsight"]
+        else:
+            # Check for valid values from select-options
+            if onsight not in GRADES:
+                return render_template("error.html", error=["invalid value"])
+        
         if not about_me:
             about_me = result["about_me"]
-
-        # Check if the age, height and bodyweight input is an integer or float
-        try:
-            age = int(age)
-            height = int(height)
-            bodyweight = float(bodyweight)
-        except:
-            return render_template("error.html", error=["invalid value"])
-        
-        # Check for positive values (age, height, bodyweight input)
-        if  age <= 0 or height <= 0 or bodyweight <= 0:
-            return render_template("error.html", error=["invalid value"])
-        
-        # Check for valid values from select-options
-        if redpoint not in GRADES:
-            return render_template("error.html", error=["invalid value"])
-
-        if onsight not in GRADES:
-            return render_template("error.html", error=["invalid value"])
         
         try:
             db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "user_id": user_id})
