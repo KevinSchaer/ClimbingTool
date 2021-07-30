@@ -54,9 +54,11 @@ def index():
     # Get existing user values from database
     db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
+    db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot, time FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+    result_routes = db.fetchall()
     connection.commit()
 
-    return render_template("index.html", result_users=result_users)
+    return render_template("index.html", result_users=result_users, result_routes=result_routes)
 
 
 @app.route("/editUserProfile", methods=["GET", "POST"])
