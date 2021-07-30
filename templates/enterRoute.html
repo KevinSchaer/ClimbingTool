@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/enterRoute" method="post" onsubmit="return confirm('Do you really want to submit the form?');">
+<div class="content-alignment">
+    <form action="/enterRoute" method="post" class="form-alignment" onsubmit="return confirm('Do you really want to submit the form?');">
         <div class="form-group">
             <input autocomplete="off" autofocus class="form-control" name="route_name" placeholder="Route Name" type="text" id="testname">
         </div>
@@ -61,4 +62,5 @@
         <button class="btn btn-primary" type="submit">Submit</button>
 
     </form>
+</div>
 {% endblock %}

@@ -147,15 +147,10 @@ def editUserProfile():
         return render_template("editUserProfile.html", grades=GRADES, result=result)
 
 
-@app.route("/searchUser", methods=["GET", "POST"])
+@app.route("/searchUser")
 @login_required
 def searchUser():
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        pass
-    # if User reached route via GET
-    else:
-        return render_template("searchUser.html")
+    return render_template("searchUser.html")
 
 
 @app.route("/search")
