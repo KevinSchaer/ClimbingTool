@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search User
+{% endblock %}
+
+{% block main %}
+
+<input autocomplete="off" autofocus placeholder="Search User" type="text">
+
+<table class="table table-striped table-hover table-sm">
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">Username</th>
+            <th scope="col">Profile</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+
+
+        <script crossorigin="anonymous" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script>
+
+            let input = document.querySelector('input');
+            input.addEventListener('keyup', function() {
+                $.get('/search?q=' + input.value, function(result) {
+                    
+                    let htmltable = "";
+                    for (let i = 0; i < result.length; i++) {
+                        let username = result[i].username
+                        htmltable += "<tr><td>" + username + "</td><td>" + username + "</td></tr>";
+                    }
+                    //alert(result[0].username);
+                    /* for (let id in result) {
+                        //let username = result[id].username.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
+                        let username = result[id]["username"];
+                        htmltable += '<tr><td>' + username + '</td></tr>';
+                    } */
+                    document.querySelector('tbody').innerHTML = htmltable;
+                });
+            });
+            
+        </script>
+
+{% endblock %}

@@ -147,6 +147,30 @@ def editUserProfile():
         return render_template("editUserProfile.html", grades=GRADES, result=result)
 
 
+@app.route("/searchUser", methods=["GET", "POST"])
+@login_required
+def searchUser():
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        pass
+    # if User reached route via GET
+    else:
+        return render_template("searchUser.html")
+
+
+@app.route("/search")
+@login_required
+def search():
+    q = request.args.get("q")
+    if q:
+        db.execute("SELECT username FROM users WHERE username LIKE ?", ("%" + q + "%",))
+        result = db.fetchall()
+        connection.commit()
+    else:
+        result = []
+    return jsonify([dict(row) for row in result])
+
+
 @app.route("/enterRoute", methods=["GET", "POST"])
 @login_required
 def enterRoute():
@@ -235,7 +259,7 @@ def enterRoute():
 
         flash('You have successfully entered a new route!')
 
-        return redirect("/")
+        return redirect("/enterRoute")
 
     # if User reached route via GET
     else:
