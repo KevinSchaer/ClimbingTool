@@ -45,12 +45,101 @@ for number in range(4,7):
             GRADES.append(str(number)+letter+symbol)
             USER_GRADES.append(str(number)+letter+symbol)
 
+
+
+@app.route("/editRoute", methods=["GET", "POST"])
+@login_required
+def editRoute():
+    user_id = session["user_id"]
+    db.execute("SELECT DISTINCT spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+    result_spot = db.fetchall()
+    """
+    db.execute("SELECT name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": result_spot[0]["spot"]})
+    result_names = db.fetchall()
+    connection.commit()
+    names = []
+    """
+    spots = []
+    for i in range(0,len(result_spot)):
+        spots.append(result_spot[i]["spot"])
+    """
+    for i in range(0,len(result_names)):
+        names.append(result_names[i]["name"])    
+    """
+    if request.method == "POST":
+        return "<h1>Spot: {}, Name: {}</h1>".format(request.form.get("spot"), request.form.get("name"))
+
+
+    return render_template("editRoute.html", names=[], spots=spots)
+
+@app.route("/editRoute/<spot>")
+@login_required
+def name(spot):
+    """
+    helper function for editRoute(), used by javascript in editRoute.html
+    """
+    db.execute("SELECT id, name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": spot})
+    result_names = db.fetchall()
+    connection.commit()
+    nameArray = []
+    for i in range(0,len(result_names)):
+        nameObj = {}
+        nameObj["name"] = result_names[i]["name"]
+        nameArray.append(nameObj)
+
+    return jsonify({"names": nameArray})
+
+
+@app.route("/searchRoutes", methods=["GET","POST"])
+@login_required
+def searchRoutes():
+    user_id = session["user_id"]
+    if request.method == "POST":
+        """
+        allow user to search routes climbed by spot, grade, score or all possible combinations
+        """
+        spot = request.form.get("spot")
+        if not spot:
+            spot = None # change empty string to None
+        grade = request.form.get("grade")
+        score = request.form.get("score")
+        db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND spot = CASE WHEN :spot COLLATE NOCASE IS NULL THEN spot ELSE :spot COLLATE NOCASE END AND grade = CASE WHEN :grade IS NULL THEN grade ELSE :grade END AND score = CASE WHEN :score IS NULL THEN score ELSE :score END ORDER BY time DESC;", {"user_id": user_id, "spot": spot, "grade": grade, "score": score})
+        result_routes = db.fetchall()
+        connection.commit()
+        # show template with the filtered routes
+        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES)
+    else:
+        # show all routes of the user
+        db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+        result_routes = db.fetchall()
+        connection.commit()
+        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES)
+
+
+@app.route("/deleteUser", methods=["GET","POST"])
+@login_required
+def deleteUser():
+    if request.method == "POST":
+        """
+        delete account of user which is currently logged in
+        """
+        user_id = session["user_id"]
+        # ON DELETE CASCADE does only work in SQLITE extension but not in flask - I don't know why
+        db.execute("PRAGMA foreign_keys = ON")
+        db.execute("DELETE FROM users WHERE id = :user_id", {"user_id": user_id})
+        connection.commit()
+        session.clear()
+        flash("You have successfully deleted your Account") # is not shown
+        return redirect("/")
+    else:
+        return render_template("deleteUser.html")
+
+
 @app.route("/")
 @login_required
 def index():
 
     user_id = session["user_id"]
-
     # Get existing user values from database
     db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()

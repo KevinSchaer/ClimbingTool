@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search Routes
+{% endblock %}
+
+{% block main %}
+
+    <form action="/searchRoutes" method="post" class="form-alignment">
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="spot" placeholder="Spot?" type="text">
+        </div>
+
+        <div class="form-group">
+            <select name="grade">
+                <option disabled selected>Grade?</option>
+                {% for grade in grades %}
+                    <option>{{ grade }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <select name="score">
+                <option disabled selected>Score?</option>
+                {% for score in scores %}
+                    <option>{{ score }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+
+    <h1 class="display-5 mt-5">Climbs Found</h1>
+
+    <div class="table-responsive-md">
+        <table class="table table-striped table-hover table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Spot</th>
+                    <th scope="col">Route</th>
+                    <th scope="col">Grade</th>
+                    <th scope="col">User Grade</th>
+                    <th scope="col">Top reached?</th>
+                    <th scope="col">Attempts</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set routes_length = result_routes|length %}
+                {% for i in range(0,routes_length) %}
+                    <tr>
+                        <td>{{ result_routes[i]["spot"] }}</td>
+                        <td>{{ result_routes[i]["name"] }}</td>
+                        <td>{{ result_routes[i]["grade"] }}</td>
+                        <td>{{ result_routes[i]["user_grade"] }}</td>
+                        <td>{{ result_routes[i]["top_reached"] }}</td>
+                        <td>{{ result_routes[i]["attempts"] }}</td>
+                        <td>{% for i in range(0,result_routes[i]["score"]) %}
+                                <span class="fa fa-star checked"></span>
+                            {% endfor %}
+                            {% for i in range(0,5-result_routes[i]["score"]) %}
+                                <span class="fa fa-star"></span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ result_routes[i]["comment"] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

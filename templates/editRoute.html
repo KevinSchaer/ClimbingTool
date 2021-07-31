@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Route
+{% endblock %}
+
+{% block main %}
+
+    <div class="content-alignment">
+        <form action="/editRoute" method="post" class="form-alignment">
+
+            <div class="form-group">
+                <select name="spot" id="spot">
+                    <option disabled selected>Spot?</option>
+                    {% for spot in spots %}
+                        <option>{{ spot }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <select name="name" id="name">
+                    <option disabled selected>Name?</option>
+                    {% for name in names %}
+                        <option>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Submit</button>
+
+        </form>
+    </div>
+
+    <script>
+        let spot_select = document.getElementById("spot");
+        let name_select = document.getElementById("name");
+
+        spot_select.onchange = function()  {
+             
+            spot = spot_select.value;
+
+            fetch("/editRoute/" + spot).then(function(response) {
+                response.json().then(function(data) {
+                    let optionHTML = 'Select Route';
+                    for (let name of data.names) {
+                        optionHTML += '<option value="' + name.name + '">' + name.name + '</option>';
+                    }
+                    name_select.innerHTML = optionHTML;
+                })
+            });
+        }
+    </script>
+
+{% endblock %}

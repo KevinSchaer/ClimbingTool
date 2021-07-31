@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Delete Account
+{% endblock %}
+
+{% block main %}
+
+    <div class="content-alignment">
+
+        <form action="/deleteUser" method="post" class="form-alignment" onsubmit="return confirm('Do you really want to delete your Account?');">
+
+            <p>Do you want to delete your Account? All your routes and other entries will be lost!</p>
+
+            <button class="btn btn-primary" type="submit">Delete</button>
+
+        </form>
+    </div>
+
+{% endblock %}
