@@ -13,6 +13,7 @@ app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config['JSON_SORT_KEYS'] = False
 
 # Ensure responses aren't cached
 @app.after_request
@@ -70,7 +71,7 @@ def editRoute():
         return "<h1>Spot: {}, Name: {}</h1>".format(request.form.get("spot"), request.form.get("name"))
 
 
-    return render_template("editRoute.html", names=[], spots=spots)
+    return render_template("editRoute.html", names=[], spots=spots, grades=GRADES, user_grades=USER_GRADES, top_reached=TOP_REACHED, scores=SCORES)
 
 @app.route("/editRoute/<spot>")
 @login_required
@@ -88,6 +89,30 @@ def name(spot):
         nameArray.append(nameObj)
 
     return jsonify({"names": nameArray})
+
+
+@app.route("/processRouteEditInput", methods=["POST"])
+@login_required
+def processRouteEditInput():
+    user_id = session["user_id"]
+    name = request.form["name"]
+    spot = request.form["spot"]
+
+    #
+    #
+    # ADD TRY CATCH + ERROR MESSAGE / HANDLING
+    #
+    #
+
+    db.execute("SELECT grade, user_grade, attempts, top_reached, score, comment FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND name = :name AND spot = :spot;", {"user_id": user_id, "name": name, "spot": spot})
+
+    result = db.fetchall()
+    connection.commit()
+
+    if result:
+        return jsonify([dict(row) for row in result])
+    else:
+        return jsonify({"error": "Missing data!"})
 
 
 @app.route("/searchRoutes", methods=["GET","POST"])
