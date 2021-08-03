@@ -78,7 +78,7 @@ def name(spot):
     """
     helper function for editRoute(), used by javascript in editRoute.html
     """
-    db.execute("SELECT id, name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": spot})
+    db.execute("SELECT DISTINCT name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": spot})
     result_names = db.fetchall()
     connection.commit()
     nameArray = []
@@ -143,11 +143,21 @@ def index():
     # Get existing user values from database
     db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
+    # Get route data from current user from database
     db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
     result_routes = db.fetchall()
+    # get number of routes per grade climbed for current user from database
+    db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id GROUP BY grade", {"user_id": user_id})
+    route_data = db.fetchall()
     connection.commit()
+    # create separate list for values (COUNT) and labels (grade)
+    labels = []
+    values = []
+    for i in range(0,len(route_data)):
+        labels.append(route_data[i]["grade"])
+        values.append(route_data[i]["COUNT"])
 
-    return render_template("index.html", result_users=result_users, result_routes=result_routes)
+    return render_template("index.html", result_users=result_users, result_routes=result_routes, labels=labels, values=values)
 
 
 @app.route("/editUserProfile", methods=["GET", "POST"])

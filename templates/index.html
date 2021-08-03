@@ -21,10 +21,10 @@
 
 {% block main %}
     <div class="col-md-12 mb-3 mt-5 no-gutters profile-alignment">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <img src="https://via.placeholder.com/150" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="150px" height="150px">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 pl-5">
             <table class="col-md-12 table-striped">
                 <tr class="col-md-3">
                     <td>Username: </td>
@@ -82,6 +82,10 @@
                 </tr>
             </table>
 
+        </div>
+
+        <div class="col-md-4 pl-5">
+            <canvas id="chart" width="400" height="300"></canvas>
         </div>
     </div>
 
@@ -146,4 +150,41 @@
             </tbody>
         </table>
     </div>
+
+
+    <script>
+        var ctx = document.getElementById("chart").getContext("2d");
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    barPercentage: 1.0,
+                    backgroundColor: "rgba(80, 220, 100, 0.5)",
+                    borderWidth: 1,
+                    data: {{ values|safe }}
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1,
+                            precision: 0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Number of Routes"
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                }
+            },
+        });
+    </script>
+
 {% endblock %}
