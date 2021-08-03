@@ -10,8 +10,8 @@
         <form action="/editRoute" method="post" class="form-alignment">
 
             <div class="form-group">
-                <select name="spot" id="spot">
-                    <option disabled selected>Spot?</option>
+                <select name="spot" id="spot" class="form-control">
+                    <option disabled selected>Select the spot</option>
                     {% for spot in spots %}
                         <option value="{{ spot }}">{{ spot }}</option>
                     {% endfor %}
@@ -19,8 +19,8 @@
             </div>
 
             <div class="form-group">
-                <select name="name" id="name">
-                    <option disabled selected>Select Spot first</option>
+                <select name="name" id="name" class="form-control">
+                    <option disabled selected>Select the spot first</option>
                     {% for name in names %}
                         <option value="{{ name }}">{{ name }}</option>
                     {% endfor %}
@@ -31,9 +31,9 @@
                 <table class="table table-striped table-hover table-sm col-md-12" id="routeInfoTable">
                     <thead class="thead-light">
                     <tr>
-                        <th class="col-md-4"></th>
-                        <th class="col-md-4">Current Value</th>
-                        <th class="col-md-4">New Value</th>
+                        <th class="col-md-1"></th>
+                        <th class="col-md-3">Current Value</th>
+                        <th class="col-md-6">New Value</th>
                     </tr>
                     </thead>
                     <tbody id="routeInfoTableBody">
@@ -46,8 +46,8 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <select name="grade">
-                                        <option disabled selected>Grade?</option>
+                                    <select name="grade" class="form-control">
+                                        <option disabled selected>Select the official grade of the route</option>
                                         {% for grade in grades %}
                                             <option>{{ grade }}</option>
                                         {% endfor %}
@@ -64,8 +64,8 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <select name="user_grade">
-                                        <option disabled selected>Personal Grade?</option>
+                                    <select name="user_grade" class="form-control">
+                                        <option disabled selected>Select your personal grading of the route</option>
                                         {% for user_grade in user_grades %}
                                             <option>{{ user_grade }}</option>
                                         {% endfor %}
@@ -82,7 +82,7 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <input autocomplete="off" class="form-control" name="attempts" placeholder="Attempts?" type="number" min="1">
+                                    <input class="form-control" autocomplete="off" class="form-control" name="attempts" placeholder="Enter your additional attempts ..." type="number" min="1">
                                 </div>
                             </td>
                         </tr>
@@ -95,8 +95,8 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <select name="top_reached">
-                                        <option disabled selected>Top Reached?</option>
+                                    <select name="top_reached" class="form-control">
+                                        <option disabled selected>Did you reach the top?</option>
                                         {% for option in top_reached %}
                                             <option>{{ option }}</option>
                                         {% endfor %}
@@ -113,8 +113,8 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <select name="score">
-                                        <option disabled selected>Score?</option>
+                                    <select name="score" class="form-control">
+                                        <option disabled selected>How would you rate the route?</option>
                                         {% for score in scores %}
                                             <option>{{ score }}</option>
                                         {% endfor %}
@@ -131,16 +131,16 @@
                             </td>
                             <td>
                                 <div class="form-group">
-                                    <textarea rows="4" cols="50" name="comments" placeholder="Any Comments about the route?"></textarea>
+                                    <textarea class="form-control" rows="4" cols="30" name="comments" placeholder="Enter any comments about the route ..."></textarea>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-
-            <button class="btn btn-primary" type="submit">Submit</button>
-
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
         </form>
     </div>
 
@@ -158,8 +158,7 @@
 
             fetch("/editRoute/" + spot).then(function(response) {
                 response.json().then(function(data) {
-                    //let optionHTML = 'Select Route';
-                    let optionHTML = '<option disabled selected>Select Route</option>'
+                    let optionHTML = '<option disabled selected>Select the route</option>'
                     for (let name of data.names) {
                         optionHTML += '<option value="' + name.name + '">' + name.name + '</option>';
                     }

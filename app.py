@@ -52,26 +52,97 @@ for number in range(4,7):
 @login_required
 def editRoute():
     user_id = session["user_id"]
-    db.execute("SELECT DISTINCT spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
-    result_spot = db.fetchall()
-    """
-    db.execute("SELECT name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": result_spot[0]["spot"]})
-    result_names = db.fetchall()
-    connection.commit()
-    names = []
-    """
-    spots = []
-    for i in range(0,len(result_spot)):
-        spots.append(result_spot[i]["spot"])
-    """
-    for i in range(0,len(result_names)):
-        names.append(result_names[i]["name"])    
-    """
+        
     if request.method == "POST":
-        return "<h1>Spot: {}, Name: {}</h1>".format(request.form.get("spot"), request.form.get("name"))
 
+        name = request.form.get("name")
+        spot = request.form.get("spot")
+        grade = request.form.get("grade")
+        user_grade = request.form.get("user_grade")
+        attempts = request.form.get("attempts")
+        top_reached = request.form.get("top_reached")
+        score = request.form.get("score")
+        comments = request.form.get("comments")
 
-    return render_template("editRoute.html", names=[], spots=spots, grades=GRADES, user_grades=USER_GRADES, top_reached=TOP_REACHED, scores=SCORES)
+        try:
+            # extract current values from database
+            db.execute("SELECT grade, user_grade, attempts, top_reached, score, comment FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND name = :name AND spot = :spot;", {"user_id": user_id, "name": name, "spot": spot})
+            current_value = db.fetchone()
+            connection.commit()
+        except:
+            return render_template("error.html", error=["invalid value"])
+
+        if not grade:
+            grade = current_value["grade"]
+        else:
+            # Check if the form input is correct 
+            if grade not in GRADES:
+                return render_template("error.html", error=["invalid value"])
+
+        if not user_grade:
+            user_grade = current_value["user_grade"]
+        else:
+            # Check if the form input is correct
+            if user_grade not in USER_GRADES:
+                return render_template("error.html", error=["invalid value"])
+
+        if not attempts:
+            attempts = current_value["attempts"]
+        else:
+            # Check if the form input is an integer 
+            try:
+                attempts = int(attempts)
+                if attempts <= 0:
+                    return render_template("error.html", error=["invalid value"])
+                else:
+                    # sum up attempts -> current and new value
+                    attempts += current_value["attempts"]
+            except:
+                return render_template("error.html", error=["invalid value"])
+
+        if not top_reached:
+            top_reached = current_value["top_reached"]
+        else:
+            # Check if the form input is correct
+            if top_reached not in TOP_REACHED:
+                return render_template("error.html", error=["invalid value"])
+
+        if not score:
+            score = current_value["score"]
+        else:
+            # Check if the form input is an integer and allowed
+            try:
+                score = int(score)
+                if score not in SCORES:
+                    return render_template("error.html", error=["invalid value"])
+            except:
+                return render_template("error.html", error=["invalid value"])
+        
+        if not comments:
+            comments = current_value["comment"]
+        try:
+            db.execute("SELECT id FROM routes WHERE name = :name AND spot = :spot", {"name": name, "spot": spot})
+            route_id = db.fetchone()
+            route_id = route_id["id"]
+            db.execute("UPDATE user_route SET score = :score, comment = :comment, attempts = :attempts, top_reached = :top_reached, user_grade = :user_grade WHERE user_id = :user_id AND route_id = :route_id", {"score": score, "comment": comments, "attempts": attempts, "top_reached": top_reached, "user_grade": user_grade, "user_id": user_id, "route_id": route_id})
+            db.execute("UPDATE routes SET grade = :grade WHERE id = :route_id", {"grade": grade, "route_id": route_id})
+            connection.commit()
+        except:
+            return render_template("error.html", error=["query failed"])
+
+        flash('You have successfully updated the route!')
+
+        return redirect("/editRoute")
+
+    if request.method == "GET":
+        db.execute("SELECT DISTINCT spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+        result_spot = db.fetchall()
+        connection.commit()
+        spots = []
+        for i in range(0,len(result_spot)):
+            spots.append(result_spot[i]["spot"])
+
+        return render_template("editRoute.html", names=[], spots=spots, grades=GRADES, user_grades=USER_GRADES, top_reached=TOP_REACHED, scores=SCORES)
 
 @app.route("/editRoute/<spot>")
 @login_required
@@ -82,6 +153,7 @@ def name(spot):
     db.execute("SELECT DISTINCT name FROM routes WHERE spot = :spot ORDER BY name DESC;", {"spot": spot})
     result_names = db.fetchall()
     connection.commit()
+    render_template("error.html", error=["query failed"])
     nameArray = []
     for i in range(0,len(result_names)):
         nameObj = {}
@@ -94,31 +166,29 @@ def name(spot):
 @app.route("/processRouteEditInput", methods=["POST"])
 @login_required
 def processRouteEditInput():
+    
     user_id = session["user_id"]
     name = request.form["name"]
     spot = request.form["spot"]
 
-    #
-    #
-    # ADD TRY CATCH + ERROR MESSAGE / HANDLING
-    #
-    #
-
     db.execute("SELECT grade, user_grade, attempts, top_reached, score, comment FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND name = :name AND spot = :spot;", {"user_id": user_id, "name": name, "spot": spot})
-
     result = db.fetchall()
     connection.commit()
-
-    if result:
-        return jsonify([dict(row) for row in result])
-    else:
-        return jsonify({"error": "Missing data!"})
+    return jsonify([dict(row) for row in result])
 
 
 @app.route("/searchRoutes", methods=["GET","POST"])
 @login_required
 def searchRoutes():
     user_id = session["user_id"]
+    # extract all spots of current user from database
+    db.execute("SELECT DISTINCT spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY spot ASC;", {"user_id": user_id})
+    result_spot = db.fetchall()
+    connection.commit()
+    spots = []
+    for i in range(0,len(result_spot)):
+        spots.append(result_spot[i]["spot"])
+
     if request.method == "POST":
         """
         allow user to search routes climbed by spot, grade, score or all possible combinations
@@ -128,17 +198,23 @@ def searchRoutes():
             spot = None # change empty string to None
         grade = request.form.get("grade")
         score = request.form.get("score")
-        db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND spot = CASE WHEN :spot COLLATE NOCASE IS NULL THEN spot ELSE :spot COLLATE NOCASE END AND grade = CASE WHEN :grade IS NULL THEN grade ELSE :grade END AND score = CASE WHEN :score IS NULL THEN score ELSE :score END ORDER BY time DESC;", {"user_id": user_id, "spot": spot, "grade": grade, "score": score})
-        result_routes = db.fetchall()
-        connection.commit()
+        try:
+            db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id AND spot = CASE WHEN :spot COLLATE NOCASE IS NULL THEN spot ELSE :spot COLLATE NOCASE END AND grade = CASE WHEN :grade IS NULL THEN grade ELSE :grade END AND score = CASE WHEN :score IS NULL THEN score ELSE :score END ORDER BY time DESC;", {"user_id": user_id, "spot": spot, "grade": grade, "score": score})
+            result_routes = db.fetchall()
+            connection.commit()
+        except:
+            render_template("error.html", error=["query failed"])
         # show template with the filtered routes
-        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES)
+        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES, spots=spots)
     else:
-        # show all routes of the user
-        db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
-        result_routes = db.fetchall()
-        connection.commit()
-        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES)
+        try:
+            # show all routes of the user
+            db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
+            result_routes = db.fetchall()
+            connection.commit()
+        except:
+            render_template("error.html", error=["query failed"])
+        return render_template("searchRoutes.html", result_routes=result_routes, grades=GRADES, scores=SCORES, spots=spots)
 
 
 @app.route("/deleteUser", methods=["GET","POST"])
@@ -149,7 +225,6 @@ def deleteUser():
         delete account of user which is currently logged in
         """
         user_id = session["user_id"]
-        # ON DELETE CASCADE does only work in SQLITE extension but not in flask - I don't know why
         db.execute("PRAGMA foreign_keys = ON")
         db.execute("DELETE FROM users WHERE id = :user_id", {"user_id": user_id})
         connection.commit()

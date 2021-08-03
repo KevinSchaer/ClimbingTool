@@ -3,9 +3,17 @@
 {% block title %}
     Log In
 {% endblock %}
-
+{% block jumbotron %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Welcome to the Climbing Tool!</h1>
+            <p class="lead">Save and organize your climbing progress by entering routes and spots!
+            </p>
+        </div>
+    </div>
+{% endblock %}
 {% block main %}
-<div class="content-alignment">
+<div class="content-alignment mb-5">
     <form action="/login" method="post" class="form-alignment">
         <div class="form-group">
             <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
@@ -13,7 +21,16 @@
         <div class="form-group">
             <input class="form-control" name="password" placeholder="Password" type="password">
         </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
+        <div class="form-group">
+            <button class="btn btn-primary" type="submit">Log In</button>
+        </div>
     </form>
 </div>
+{% endblock %}
+{% block footer %}
+<footer class="text-center text-white fixed-bottom" style="background-color: #f1f1f1;">
+    <div class="text-center text-dark p-2" style="background-color: rgba(0, 0, 0, 0.2);">
+    © 2021 Copyright: Kevin Schär and Philippe Schwank
+    </div>
+</footer>
 {% endblock %}
