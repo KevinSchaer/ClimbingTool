@@ -5,6 +5,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 import sqlite3
 from helpers import login_required
@@ -14,6 +15,12 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config['JSON_SORT_KEYS'] = False
+
+# Configure file upload
+app.config['MAX_CONTENT_LENGTH'] = 3 * 500 * 500
+app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.jpeg', '.png']
+profilePictures_Folder = os.path.join('static', 'profilePictures')
+app.config['UPLOAD_PATH'] = profilePictures_Folder
 
 # Ensure responses aren't cached
 @app.after_request
@@ -243,21 +250,27 @@ def index():
     # Get existing user values from database
     db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
+    if not result_users["profile"]:
+        user_image = None
+    else:
+        user_image = os.path.join(app.config['UPLOAD_PATH'], result_users["profile"])
     # Get route data from current user from database
     db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
     result_routes = db.fetchall()
     # get number of routes per grade climbed for current user from database
     db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id GROUP BY grade", {"user_id": user_id})
     route_data = db.fetchall()
+    db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id AND top_reached = :top_reached GROUP BY grade", {"user_id": user_id, "top_reached": "Yes"})
+    route_data_topreached = db.fetchall()
     connection.commit()
     # create separate list for values (COUNT) and labels (grade)
-    labels = []
-    values = []
-    for i in range(0,len(route_data)):
-        labels.append(route_data[i]["grade"])
-        values.append(route_data[i]["COUNT"])
+    data_dict = {}
+    data_dict["allLabels"] = [data["grade"] for data in route_data]
+    data_dict["allValues"] = [data["COUNT"] for data in route_data]
+    data_dict["yesLabels"] = [data["grade"] for data in route_data_topreached]
+    data_dict["yesValues"] = [data["COUNT"] for data in route_data_topreached]
 
-    return render_template("index.html", result_users=result_users, result_routes=result_routes, labels=labels, values=values)
+    return render_template("index.html", result_users=result_users, user_image=user_image, result_routes=result_routes, data_dict=data_dict)
 
 
 @app.route("/editUserProfile", methods=["GET", "POST"])
@@ -280,6 +293,7 @@ def editUserProfile():
         redpoint = request.form.get("redpoint")
         onsight = request.form.get("onsight")
         about_me = request.form.get("about_me")
+        uploaded_picture = request.files.get("picture", None)
         
         if not age:
             age = result["age"]
@@ -330,9 +344,20 @@ def editUserProfile():
         
         if not about_me:
             about_me = result["about_me"]
+
+        if not uploaded_picture:
+            unique_filename = result["picture_path"]
+        else:
+            filename = secure_filename(uploaded_picture.filename)
+            filename_ext = os.path.splitext(filename)[1]
+            if filename_ext not in app.config['UPLOAD_EXTENSIONS']:
+                return render_template("error.html", error=["invalid file extension"])
+            else:
+                unique_filename = str(user_id) + "_" + filename
+                uploaded_picture.save(os.path.join(app.config['UPLOAD_PATH'], unique_filename))
         
         try:
-            db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "user_id": user_id})
+            db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me, profile = :unique_filename WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "unique_filename": unique_filename, "user_id": user_id})
             connection.commit()
         except:
             return render_template("error.html", error=["query failed"])

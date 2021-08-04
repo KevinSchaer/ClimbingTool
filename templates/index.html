@@ -22,7 +22,7 @@
 {% block main %}
     <div class="col-md-12 mb-3 mt-5 no-gutters profile-alignment">
         <div class="col-md-2">
-            <img src="https://via.placeholder.com/150" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="150px" height="150px">
+            <img src="{{ user_image }}" onerror="this.src = 'https://via.placeholder.com/500';" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="500px" height="500px">
         </div>
         <div class="col-md-3 pl-5">
             <table class="col-md-12 table-striped">
@@ -84,6 +84,11 @@
         </div>
         <div class="col-md-4 pl-5">
             <canvas id="chart" width="400" height="300"></canvas>
+            <div class="pl-5">
+                <input type="checkbox" id="dataCheckbox" name="dataCheckbox"
+                       checked>
+                <label for="dataCheckbox">Show only topped Routes</label>
+              </div>
         </div>
     </div>
 
@@ -147,20 +152,32 @@
                 {% endif %}
             </tbody>
         </table>
+
     </div>
 
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
     <script>
+
+        const checkbox = document.getElementById("dataCheckbox")
+        checkbox.addEventListener('change', changeData); 
+
+        var yesLabels = {{ data_dict["yesLabels"]|safe }};
+        var yesValues = {{ data_dict["yesValues"]|safe }};
+        var yesLabelString = "Number of topped Routes";
+        var allLabels = {{ data_dict["allLabels"]|safe }};
+        var allValues = {{ data_dict["allValues"]|safe }};
+        var allLabelString = "Number of all Routes tried";
+
         var ctx = document.getElementById("chart").getContext("2d");
         var chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: {{ labels|safe }},
+                labels: yesLabels,
                 datasets: [{
                     barPercentage: 1.0,
                     backgroundColor: "rgba(80, 220, 100, 0.5)",
                     borderWidth: 1,
-                    data: {{ values|safe }}
+                    data: yesValues
                 }]
             },
             options: {
@@ -174,7 +191,8 @@
                         },
                         scaleLabel: {
                             display: true,
-                            labelString: "Number of Routes"
+                            labelString: yesLabelString,
+                            fontSize: 16,
                         }
                     }]
                 },
@@ -183,6 +201,21 @@
                 }
             },
         });
+
+        function changeData(){
+            if (checkbox.checked == true){
+                chart.options.scales.yAxes[0].scaleLabel.labelString = yesLabelString;
+                chart.config.data.labels = yesLabels;
+                chart.config.data.datasets[0].data = yesValues;
+                chart.update();
+            } else {
+                chart.options.scales.yAxes[0].scaleLabel.labelString = allLabelString;
+                chart.config.data.labels = allLabels;
+                chart.config.data.datasets[0].data = allValues;
+                chart.update();
+            }
+        };
+
     </script>
 
 {% endblock %}

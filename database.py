@@ -15,6 +15,7 @@ db.execute("""CREATE TABLE IF NOT EXISTS users (
         redpoint TEXT,
         onsight TEXT,
         about_me TEXT,
+        picture_path TEXT,
         PRIMARY KEY (id)
     );""")
 
@@ -45,6 +46,12 @@ db.execute("""CREATE TABLE IF NOT EXISTS user_route (
                 ON DELETE CASCADE
                 ON UPDATE NO ACTION
     );""")
+
+
+#db.execute("""ALTER TABLE users
+#        ADD COLUMN picture_path TEXT
+#        """)
+
 
 def select():
     db.execute("SELECT * from users")
