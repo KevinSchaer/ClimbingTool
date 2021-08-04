@@ -346,7 +346,7 @@ def editUserProfile():
             about_me = result["about_me"]
 
         if not uploaded_picture:
-            unique_filename = result["picture_path"]
+            unique_filename = result["profile"]
         else:
             filename = secure_filename(uploaded_picture.filename)
             filename_ext = os.path.splitext(filename)[1]
