@@ -168,7 +168,8 @@
         var allLabels = {{ data_dict["allLabels"]|safe }};
         var allValues = {{ data_dict["allValues"]|safe }};
         var allLabelString = "Number of all Routes tried";
-
+        
+        // create chart for index page
         var ctx = document.getElementById("chart").getContext("2d");
         var chart = new Chart(ctx, {
             type: 'bar',
@@ -204,6 +205,7 @@
         });
 
         function changeData(){
+            // change data of chart on click
             if (checkbox.checked == true){
                 chart.options.scales.yAxes[0].scaleLabel.labelString = yesLabelString;
                 chart.config.data.labels = yesLabels;

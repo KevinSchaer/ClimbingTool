@@ -15,7 +15,7 @@ db.execute("""CREATE TABLE IF NOT EXISTS users (
         redpoint TEXT,
         onsight TEXT,
         about_me TEXT,
-        profile TEXT,
+        profile TEXT DEFAULT default.png,
         PRIMARY KEY (id)
     );""")
 
