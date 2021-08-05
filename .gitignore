@@ -1,3 +1,5 @@
 /__pycache__/
 *.db
-static/profilePictures/*
+static/profilePictures/*.jpg
+static/profilePictures/*.jpeg
+static/profilePictures/*.png

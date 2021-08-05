@@ -22,8 +22,7 @@
 {% block main %}
     <div class="col-md-12 mb-3 mt-5 no-gutters profile-alignment">
         <div class="col-md-2">
-            <img src="{{ user_image }}" onerror="this.src = 'static/default.png';" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="500px" height="500px">
-            <!--https://via.placeholder.com/500-->
+            <img src="../static/profilePictures/{{ result_users.profile }}" alt="profile picture" class="img-fluid float-left img-thumbnail pull-left mr-3" width="500px" height="500px">
         </div>
         <div class="col-md-3 pl-5">
             <table class="col-md-12 table-striped">
@@ -92,7 +91,7 @@
               </div>
         </div>
     </div>
-
+    <hr>
     <h1 class="display-5">Latest Climbs</h1>
 
     <div class="table-responsive-md">
@@ -111,46 +110,24 @@
             </thead>
             <tbody>
                 {% set routes_length = result_routes|length %}
-                {% set routes_shown = 5 %}
-                {% if routes_length < routes_shown %}
-                    {% for i in range(0,routes_length) %}
-                        <tr>
-                            <td>{{ result_routes[i]["spot"] }}</td>
-                            <td>{{ result_routes[i]["name"] }}</td>
-                            <td>{{ result_routes[i]["grade"] }}</td>
-                            <td>{{ result_routes[i]["user_grade"] }}</td>
-                            <td>{{ result_routes[i]["top_reached"] }}</td>
-                            <td>{{ result_routes[i]["attempts"] }}</td>
-                            <td>{% for i in range(0,result_routes[i]["score"]) %}
-                                    <span class="fa fa-star checked"></span>
-                                {% endfor %}
-                                {% for i in range(0,5-result_routes[i]["score"]) %}
-                                    <span class="fa fa-star"></span>
-                                {% endfor %}
-                            </td>
-                            <td>{{ result_routes[i]["comment"] }}</td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    {% for i in range(0,routes_shown) %}
-                        <tr>
-                            <td>{{ result_routes[i]["spot"] }}</td>
-                            <td>{{ result_routes[i]["name"] }}</td>
-                            <td>{{ result_routes[i]["grade"] }}</td>
-                            <td>{{ result_routes[i]["user_grade"] }}</td>
-                            <td>{{ result_routes[i]["top_reached"] }}</td>
-                            <td>{{ result_routes[i]["attempts"] }}</td>
-                            <td>{% for i in range(0,result_routes[i]["score"]) %}
-                                    <span class="fa fa-star checked"></span>
-                                {% endfor %}
-                                {% for i in range(0,5-result_routes[i]["score"]) %}
-                                    <span class="fa fa-star"></span>
-                                {% endfor %}
-                            </td>
-                            <td>{{ result_routes[i]["comment"] }}</td>
-                        </tr>
-                    {% endfor %}
-                {% endif %}
+                {% for i in range(0,routes_length) %}
+                    <tr>
+                        <td>{{ result_routes[i]["spot"] }}</td>
+                        <td>{{ result_routes[i]["name"] }}</td>
+                        <td>{{ result_routes[i]["grade"] }}</td>
+                        <td>{{ result_routes[i]["user_grade"] }}</td>
+                        <td>{{ result_routes[i]["top_reached"] }}</td>
+                        <td>{{ result_routes[i]["attempts"] }}</td>
+                        <td>{% for i in range(0,result_routes[i]["score"]) %}
+                                <span class="fa fa-star checked"></span>
+                            {% endfor %}
+                            {% for i in range(0,5-result_routes[i]["score"]) %}
+                                <span class="fa fa-star"></span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ result_routes[i]["comment"] }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
 

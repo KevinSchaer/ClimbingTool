@@ -19,6 +19,7 @@ app.config['JSON_SORT_KEYS'] = False
 # Configure file upload
 app.config['MAX_CONTENT_LENGTH'] = 3 * 500 * 500
 app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.jpeg', '.png']
+# if this path is changed also the path in index.html has to be changed
 profilePictures_Folder = os.path.join('static', 'profilePictures')
 app.config['UPLOAD_PATH'] = profilePictures_Folder
 
@@ -131,7 +132,7 @@ def editRoute():
             db.execute("SELECT id FROM routes WHERE name = :name AND spot = :spot", {"name": name, "spot": spot})
             route_id = db.fetchone()
             route_id = route_id["id"]
-            db.execute("UPDATE user_route SET score = :score, comment = :comment, attempts = :attempts, top_reached = :top_reached, user_grade = :user_grade WHERE user_id = :user_id AND route_id = :route_id", {"score": score, "comment": comments, "attempts": attempts, "top_reached": top_reached, "user_grade": user_grade, "user_id": user_id, "route_id": route_id})
+            db.execute("UPDATE user_route SET score = :score, comment = :comment, attempts = :attempts, top_reached = :top_reached, user_grade = :user_grade, time = :timestamp WHERE user_id = :user_id AND route_id = :route_id", {"score": score, "comment": comments, "attempts": attempts, "top_reached": top_reached, "user_grade": user_grade, "timestamp": "CURRENT_TIMESTAMP", "user_id": user_id, "route_id": route_id})
             db.execute("UPDATE routes SET grade = :grade WHERE id = :route_id", {"grade": grade, "route_id": route_id})
             connection.commit()
         except:
@@ -250,14 +251,10 @@ def index():
     # Get existing user values from database
     db.execute("SELECT username, age, bodyweight, height, redpoint, onsight, about_me, profile FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
-    if not result_users["profile"]:
-        user_image = None
-    else:
-        user_image = os.path.join(app.config['UPLOAD_PATH'], result_users["profile"])
     # Get route data from current user from database
     db.execute("SELECT top_reached, attempts, score, user_grade, comment, name, grade, spot FROM user_route INNER JOIN routes ON user_route.route_id = routes.id  WHERE user_id = :user_id ORDER BY time DESC;", {"user_id": user_id})
-    result_routes = db.fetchall()
-    # get number of routes per grade climbed for current user from database
+    result_routes = db.fetchmany(5) # get only the first 5 entries
+    # get number of routes per grade climbed for current user from database with and without condition
     db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id GROUP BY grade", {"user_id": user_id})
     route_data = db.fetchall()
     db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id AND top_reached = :top_reached GROUP BY grade", {"user_id": user_id, "top_reached": "Yes"})
@@ -270,7 +267,7 @@ def index():
     data_dict["yesLabels"] = [data["grade"] for data in route_data_topreached]
     data_dict["yesValues"] = [data["COUNT"] for data in route_data_topreached]
 
-    return render_template("index.html", result_users=result_users, user_image=user_image, result_routes=result_routes, data_dict=data_dict)
+    return render_template("index.html", result_users=result_users, result_routes=result_routes, data_dict=data_dict)
 
 
 @app.route("/editUserProfile", methods=["GET", "POST"])
@@ -351,18 +348,27 @@ def editUserProfile():
         if not uploaded_picture:
             unique_filename = result["profile"]
         else:
+            # ensure filename is secure and valid (no SQL injections, etc.)
             filename = secure_filename(uploaded_picture.filename)
+            # check if file has a valid image type (jpg, jpeg, png)
             filename_ext = os.path.splitext(filename)[1]
             if filename_ext not in app.config['UPLOAD_EXTENSIONS']:
                 return render_template("error.html", error=["invalid file extension"])
             else:
+                # create unique filename with user_id
                 unique_filename = str(user_id) + filename_ext
+                # only delete old profile picture if it is not the default picture
+                if result["profile"] != "default.png":
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_PATH'], result["profile"]))
+                    except:
+                        return render_template("error.html", error=["image upload error"])
+                # save new profile picture
                 try:
-                    os.remove(os.path.join(app.config['UPLOAD_PATH'], result["profile"]))
                     uploaded_picture.save(os.path.join(app.config['UPLOAD_PATH'], unique_filename))
                 except:
                     return render_template("error.html", error=["image upload error"])
-        
+
         try:
             db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me, profile = :unique_filename WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "unique_filename": unique_filename, "user_id": user_id})
             connection.commit()
@@ -400,13 +406,32 @@ def search():
 @app.route("/processSearchUserInput", methods=["POST"])
 @login_required
 def processSearchUserInput():
-
+    
     username = request.form["name"]
 
     db.execute("SELECT username, age, height, bodyweight, redpoint, onsight, about_me, profile FROM users WHERE username = :username;", {"username": username})
-    result = db.fetchall()
+    result_userInfo = db.fetchall()
+
+    # extract user_id from database
+    db.execute("SELECT id FROM users WHERE username = :username;", {"username": result_userInfo[0]["username"]})
+    user_id = db.fetchone()
+
+    # get number of routes per grade climbed for current user from database with and without condition
+    db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id GROUP BY grade", {"user_id": user_id["id"]})
+    route_data = db.fetchall()
+    db.execute("SELECT grade, COUNT(*) AS COUNT FROM routes INNER JOIN user_route ON user_route.route_id = routes.id  WHERE user_id = :user_id AND top_reached = :top_reached GROUP BY grade", {"user_id": user_id["id"], "top_reached": "Yes"})
+    route_data_topreached = db.fetchall()
     connection.commit()
-    return jsonify([dict(row) for row in result])
+
+    # create separate list for values (COUNT) and labels (grade)
+    data_dict = {}
+    data_dict["result_userInfo"] = [dict(row) for row in result_userInfo]
+    data_dict["allLabels"] = [data["grade"] for data in route_data]
+    data_dict["allValues"] = [data["COUNT"] for data in route_data]
+    data_dict["yesLabels"] = [data["grade"] for data in route_data_topreached]
+    data_dict["yesValues"] = [data["COUNT"] for data in route_data_topreached]
+
+    return jsonify(data_dict)
 
 
 @app.route("/enterRoute", methods=["GET", "POST"])
