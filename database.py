@@ -8,14 +8,13 @@ db.execute("""CREATE TABLE IF NOT EXISTS users (
         id INTEGER,
         username TEXT NOT NULL UNIQUE,
         hash TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
         bodyweight REAL,
         height INTEGER,
         age INTEGER,
         redpoint TEXT,
         onsight TEXT,
         about_me TEXT,
-        profile TEXT DEFAULT default.png,
+        profile TEXT DEFAULT "default.png",
         PRIMARY KEY (id)
     );""")
 

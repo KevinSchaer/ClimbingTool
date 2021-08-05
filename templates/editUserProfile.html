@@ -100,8 +100,9 @@
                             {{ result.about_me }}
                         </td>
                         <td>
-                            <div class="form-group">
-                                <textarea class="form-control" rows="4" cols="50" name="about_me" placeholder="Tell us something about yourself"></textarea>
+                            <div class="form-group">    
+                                <textarea class="form-control" rows="4" cols="50" maxlength="200" onkeyup="textCounter(this,'counter',10);" id="message" name="about_me" placeholder="Tell us something about yourself"></textarea>
+                                <p style="font-size: 12px;"></p>
                             </div>
                         </td>
                     </tr>
@@ -115,7 +116,7 @@
                         <td>
                             <div class="form-group">
                                 <input type="file" name="picture" accept="image/*">
-                                <p style="font-size: 10px;">Only images with a size of 500x500 pixels are allowed</p>
+                                <p style="font-size: 12px;">Only images with a size of 500x500 pixels are allowed</p>
                             </div>
                         </td>
                     </tr>
@@ -127,5 +128,15 @@
         </div>
     </form>
 </div>
+<script>
+$("textarea").keyup(function(){
+
+if(this.value.length > $(this).attr("maxlength")){
+    return false;
+}
+$(this).next().html(($(this).attr("maxlength") - this.value.length) + "/200");
+
+});
+</script>
 
 {% endblock %}

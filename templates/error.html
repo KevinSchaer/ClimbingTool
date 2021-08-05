@@ -60,6 +60,18 @@
         </div>
     {% endif %}
 
+    {% if error[0] == "about_me too long" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: The maximum number of characters in "About me" has been exceeded!</p>
+        </div>
+    {% endif %}
+    
+    {% if error[0] == "username length" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Username is too long!</p>
+        </div>
+    {% endif %}
+
     {% if error[0] == "incomplete form" %}
         <div class="alert alert-danger" role="alert">
             <p>Error: Incomplete form!</p>
@@ -70,6 +82,12 @@
         <div class="alert alert-danger" role="alert">
             <p>Error: Invalid File Extensions!</p>
             <p>Only .jpg, .jpeg and .png are allowed</p>
+        </div>
+    {% endif %}
+
+    {% if error[0] == "image upload error" %}
+        <div class="alert alert-danger" role="alert">
+            <p>Error: Could not upload the image!</p>
         </div>
     {% endif %}
 

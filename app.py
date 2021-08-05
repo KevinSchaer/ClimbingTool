@@ -248,7 +248,7 @@ def index():
 
     user_id = session["user_id"]
     # Get existing user values from database
-    db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
+    db.execute("SELECT username, age, bodyweight, height, redpoint, onsight, about_me, profile FROM users WHERE id = :user_id", {"user_id": user_id})
     result_users = db.fetchone()
     if not result_users["profile"]:
         user_image = None
@@ -280,7 +280,7 @@ def editUserProfile():
     user_id = session["user_id"]
 
     # Get existing user values from database
-    db.execute("SELECT * FROM users WHERE id = :user_id", {"user_id": user_id})
+    db.execute("SELECT age, height, bodyweight, redpoint, onsight, about_me, profile FROM users WHERE id = :user_id", {"user_id": user_id})
     result = db.fetchone()
     connection.commit()
 
@@ -344,6 +344,9 @@ def editUserProfile():
         
         if not about_me:
             about_me = result["about_me"]
+        else:
+            if len(about_me) > 200:
+                return render_template("error.html", error=["about_me too long"])
 
         if not uploaded_picture:
             unique_filename = result["profile"]
@@ -353,8 +356,12 @@ def editUserProfile():
             if filename_ext not in app.config['UPLOAD_EXTENSIONS']:
                 return render_template("error.html", error=["invalid file extension"])
             else:
-                unique_filename = str(user_id) + "_" + filename
-                uploaded_picture.save(os.path.join(app.config['UPLOAD_PATH'], unique_filename))
+                unique_filename = str(user_id) + filename_ext
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_PATH'], result["profile"]))
+                    uploaded_picture.save(os.path.join(app.config['UPLOAD_PATH'], unique_filename))
+                except:
+                    return render_template("error.html", error=["image upload error"])
         
         try:
             db.execute("UPDATE users SET age = :age, height = :height, bodyweight = :bodyweight, redpoint = :redpoint, onsight = :onsight, about_me = :about_me, profile = :unique_filename WHERE id = :user_id", {"age": age, "height": height, "bodyweight": bodyweight, "redpoint": redpoint, "onsight": onsight, "about_me": about_me, "unique_filename": unique_filename, "user_id": user_id})
@@ -387,6 +394,18 @@ def search():
         connection.commit()
     else:
         result = []
+    return jsonify([dict(row) for row in result])
+
+
+@app.route("/processSearchUserInput", methods=["POST"])
+@login_required
+def processSearchUserInput():
+
+    username = request.form["name"]
+
+    db.execute("SELECT username, age, height, bodyweight, redpoint, onsight, about_me, profile FROM users WHERE username = :username;", {"username": username})
+    result = db.fetchall()
+    connection.commit()
     return jsonify([dict(row) for row in result])
 
 
@@ -507,7 +526,7 @@ def login():
             return render_template("error.html", error=["missing password"])
 
         # Query database for username
-        db.execute("SELECT * FROM users WHERE username = :username", {"username": username})
+        db.execute("SELECT id, hash FROM users WHERE username = :username", {"username": username})
         rows = db.fetchall()
         connection.commit()
 
@@ -552,10 +571,10 @@ def register():
         # Ensure username was submitted
         if not username:
             return render_template("error.html", error=["missing username"])
-            
-        # Ensure email was submitted
-        if not email:
-            return render_template("error.html", error=["missing email"])
+
+        # check length of username
+        elif len(username) > 30:
+            return render_template("error.html", error=["username length"])
 
         # Ensure password was submitted
         elif not password:
@@ -569,11 +588,17 @@ def register():
         elif password != confirmation:
             return render_template("error.html", error=["different passwords"])
 
+        """ 
+        # Ensure email was submitted
+        elif not email:
+            return render_template("error.html", error=["missing email"])
+        """
+
         # hash password
         hashPassword = generate_password_hash(password)
 
         try:
-            db.execute("INSERT INTO users (username, hash, email) Values (:username, :hash, :email)", {"username": username, "hash": hashPassword, "email": email})
+            db.execute("INSERT INTO users (username, hash) Values (:username, :hash)", {"username": username, "hash": hashPassword})
             connection.commit()
         except:
             return render_template("error.html", error=["user uniqueness"])
