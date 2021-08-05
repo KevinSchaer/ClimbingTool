@@ -1,6 +1,7 @@
 /__pycache__/
 .DS_Store
 *.db
-static/profilePictures/*.png
 static/profilePictures/*.jpg
 static/profilePictures/*.jpeg
+static/profilePictures/*.png
+!static/profilePictures/default.png
