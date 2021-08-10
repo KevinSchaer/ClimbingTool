@@ -38,7 +38,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # create connection to database
-connection = sqlite3.connect('climbing.db', check_same_thread=False)
+# connection = sqlite3.connect('climbing.db', check_same_thread=False)
+connection = sqlite3.connect('postgres://rahpuuxlaysisk:97e777f40cf170699070719d26bec121da61628c3481f7517901291d941c6249@ec2-52-30-81-192.eu-west-1.compute.amazonaws.com:5432/d76bmlddtllrk7', check_same_thread=False)
 connection.row_factory = sqlite3.Row # allow to access return variable by column name
 db = connection.cursor()
 
