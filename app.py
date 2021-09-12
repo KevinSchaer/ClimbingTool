@@ -1,4 +1,5 @@
 import os
+from sqlite3.dbapi2 import Cursor
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask.helpers import url_for
 from flask_session import Session
@@ -8,6 +9,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 import sqlite3
+import psycopg2
+import psycopg2.extras as ext
 from helpers import login_required
 
 app = Flask(__name__)
@@ -38,10 +41,10 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # create connection to database
-connection = sqlite3.connect('climbing.db', check_same_thread=False)
-# connection = sqlite3.connect('postgres://rahpuuxlaysisk:97e777f40cf170699070719d26bec121da61628c3481f7517901291d941c6249@ec2-52-30-81-192.eu-west-1.compute.amazonaws.com:5432/d76bmlddtllrk7', check_same_thread=False)
-connection.row_factory = sqlite3.Row # allow to access return variable by column name
-db = connection.cursor()
+DATABASE_URL = os.environ.get('DATABASE_URL')
+conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+db = conn.cursor(cursor_factory=ext.DictCursor)
+
 
 # Fixed values
 GRADES = []
