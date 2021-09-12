@@ -41,6 +41,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # create connection to database
+# https://www.youtube.com/watch?v=E9YoHAQXtTY
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 db = conn.cursor(cursor_factory=ext.DictCursor)
