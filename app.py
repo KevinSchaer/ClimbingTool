@@ -1,4 +1,5 @@
 import os
+from sqlite3.dbapi2 import Cursor
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask.helpers import url_for
 from flask_session import Session
@@ -8,6 +9,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 import sqlite3
+import psycopg2
+import psycopg2.extras as ext
 from helpers import login_required
 
 app = Flask(__name__)
@@ -32,15 +35,17 @@ def after_request(response):
     return response
 
 # Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
+#app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # create connection to database
-connection = sqlite3.connect('climbing.db', check_same_thread=False)
-connection.row_factory = sqlite3.Row # allow to access return variable by column name
-db = connection.cursor()
+# https://www.youtube.com/watch?v=E9YoHAQXtTY
+DATABASE_URL = os.environ.get('DATABASE_URL')
+connection = psycopg2.connect(DATABASE_URL, sslmode='require')
+db = connection.cursor(cursor_factory=ext.DictCursor)
+
 
 # Fixed values
 GRADES = []
